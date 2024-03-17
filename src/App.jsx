@@ -1,13 +1,14 @@
 import { useRef, useState, useCallback } from 'react';
+import { useFetch } from './hooks/useFetch.js';
+import { fetchUserPlaces, updateUserPlaces } from './http.js';
 
 import Places from './components/Places.jsx';
 import Modal from './components/Modal.jsx';
 import DeleteConfirmation from './components/DeleteConfirmation.jsx';
-import logoImg from './assets/logo.png';
 import AvailablePlaces from './components/AvailablePlaces.jsx';
-import { fetchUserPlaces, updateUserPlaces } from './http.js';
 import Error from './components/Error.jsx';
-import { useFetch } from './hooks/useFetch.js';
+
+import logoImg from './assets/logo.png';
 
 function App() {
   const selectedPlace = useRef();
@@ -42,11 +43,13 @@ function App() {
       if (prevPickedPlaces.some((place) => place.id === selectedPlace.id)) {
         return prevPickedPlaces;
       }
-      return [selectedPlace, ...prevPickedPlaces];
+      return [...prevPickedPlaces, selectedPlace];
     });
 
     try {
-      await updateUserPlaces([selectedPlace, ...userPlaces]);
+      if (!userPlaces.some((place) => place.id === selectedPlace.id)) {
+        await updateUserPlaces([...userPlaces, selectedPlace]);
+      }
     } catch (error) {
       setUserPlaces(userPlaces);
       setErrorUpdatingPlaces({
